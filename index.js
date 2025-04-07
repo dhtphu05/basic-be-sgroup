@@ -1,12 +1,21 @@
-const express = require('express')
-const req = require('express/lib/request')
-const bodyParser = require('body-parser')
-const fs = require('fs');
-const path = require('path');
+
+import express from 'express'
+import bodyParser from 'body-parser'
+import fs from 'fs'
+import path from 'path'
+
+import validateUserId from './src/middleware/checkID.middleware.js'
+import validateUserExistence from './src/middleware/checkUserExist.middleware.js'
+import validateName from './src/middleware/validateName.middleware.js'
+import checkFullField from './src/middleware/checkFullField.middleware.js'
+
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express()
-const port = 3005
+const port = 3002
 app.use(bodyParser.json());
-app.use(express.json());
 const usersFilePath = path.join(__dirname, 'users.json');
 function readUsers() {
   try {
@@ -27,6 +36,7 @@ app.get('/', (req, res) => {
 })
 const users= readUsers();
 // Lấy danh sách người dùng với sắp xếp theo ID
+
 app.get('/users', (req, res) => {
   const { sort } = req.query;
   let sortedUsers = [...users];
@@ -38,32 +48,41 @@ app.get('/users', (req, res) => {
   res.send(sortedUsers);
 });
 // Lấy thông tin người dùng theo ID
-app.get('/users/:id', (req, res) => {
+
+
+
+app.get('/users/:id', validateUserId, validateUserExistence, (req, res) => {
+
   const user = users.find(u => u.id === parseInt(req.params.id));
-  res.send(user);
+  
+  res.status(200).send(user);
 });
 // Thêm người dùng mới
-app.post('/users', (req, res) => {
+
+app.post('/users', validateUserExistence,validateName, (req, res) => {
   const { name} = req.body;
   const newUser = { id: users.length + 1, name};
+  
   users.push(newUser);
   writeUsers(users); 
-  res.send(newUser);
+  res.status(200).send(newUser);
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id',validateUserExistence, validateName, (req, res) => {
   const user = users.find(u => u.id === parseInt(req.params.id));
   const { name } = req.body;
+  
   if (name) user.name = name;
   writeUsers(users);
-  res.send(user);
+  res.status(200).send(user);
 });
 
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id', validateUserExistence, (req, res) => {
   const userIndex = users.findIndex(u => u.id === parseInt(req.params.id));
+  
   users.splice(userIndex, 1);
   writeUsers(users);
-  res.send(users);
+  res.status(200).send(users);
 });
 
 
