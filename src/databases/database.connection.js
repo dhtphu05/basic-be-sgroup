@@ -1,15 +1,21 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://user:password@127.0.0.1:27019/S-Mongo?authSource=admin', {
+    // Sử dụng biến môi trường hoặc fallback vào MongoDB địa phương
+    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/S-Mongo';
+    
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
     console.log('Connected to MongoDB');
   } catch (err) {
-    console.error('Could not connect to MongoDB', err);
-    // Thoát process nếu kết nối thất bại
+    console.error('Could not connect to MongoDB:', err.message);
     process.exit(1);
   }
 };

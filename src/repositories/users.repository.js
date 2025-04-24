@@ -54,4 +54,31 @@ export class UserRepository {
       email: deletedUser.email,
     };
   }
+    // Thêm các phương thức này vào class UserRepository hiện có của bạn
+  async findByUsername(username) {
+    const user = await UserModel.findOne({ name: username });
+    if (!user) return null;
+    
+    return {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      role: user.role || 'user'
+    };
+  }
+  
+  async findByEmail(email) {
+    const user = await UserModel.findOne({ email });
+    if (!user) return null;
+    
+    return {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      role: user.role || 'user'
+    };
+  }
+
 }

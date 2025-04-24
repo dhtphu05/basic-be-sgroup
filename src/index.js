@@ -14,7 +14,7 @@ connectDB().then(() => {
   // Routes
   app.use('/api', routers);
   
-  // Error handler middleware
+  // Error handler middleware 
   app.use(errorHandler);
 
   app.listen(port, () => {
