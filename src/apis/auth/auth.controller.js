@@ -3,33 +3,32 @@ import AuthService from './auth.service.js';
 class AuthController {
     async register(req, res, next) {
         try {
+            console.log('\n🔷 Register Controller:');
+            console.log('📥 Received data:', req.body);
+        
             const { username, email, password } = req.body;
             
             // Validate input
             if (!username || !email || !password) {
+                console.log('❌ Validation failed:', { username, email, password });
                 return res.status(400).json({
                     success: false,
                     message: 'Please provide username, email and password'
                 });
             }
-            
+            console.log('✅ Validation passed, calling AuthService...');
             // Register user
             const result = await AuthService.register(username, email, password);
-            
+            console.log('📤 Service result:', result);
             // Attach user to request for next middleware
-            req.user = result;
-            
-            // If no next middleware, respond here
-            if (!next) {
-                return res.status(201).json({
-                    success: true,
-                    message: 'User registered successfully',
-                    data: result
-                });
-            }
+            return res.status(201).json({
+                success: true,
+                message: 'User registered successfully',
+                data: result
+            });
             
             // Continue to next middleware
-            next();
+            
         } catch (error) {
             console.error('Registration controller error:', error);
             return res.status(400).json({

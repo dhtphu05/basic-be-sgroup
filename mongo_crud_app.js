@@ -21,7 +21,27 @@ const Movie = mongoose.model('Movie', movieSchema);
 
 const app = express();
 app.use(express.json());
-app.use('/apis', authRoute);
+app.use((req, res, next) => {
+  console.log('Request:', {
+      method: req.method,
+      path: req.path,
+      body: req.body,
+      headers: req.headers
+  });
+  next();
+});
+// Thêm sau app.use(express.json());
+app.use((req, res, next) => {
+    console.log('\n🔍 Debug Request:');
+    console.log('📍 URL:', req.url);
+    console.log('📝 Method:', req.method);
+    console.log('📦 Body:', JSON.stringify(req.body, null, 2));
+    console.log('🎯 Route:', req.route);
+    console.log('🔑 Headers:', req.headers);
+    next();
+});
+
+app.use('/apis/auth', authRoute);
 
 // Create a new movie
 app.post('/movies', async (req, res) => {
