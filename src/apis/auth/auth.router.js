@@ -10,7 +10,8 @@ authRoute.post('/example', AuthController.example);
 // Auth routes
 authRoute.post('/register', AuthController.register);
 authRoute.post('/login', AuthController.login);
-
+authRoute.post('/forgot-password', AuthController.forgotPassword);
+authRoute.post('/reset-password/:token', AuthController.resetPassword);
 // Protected route example
 authRoute.get('/profile', authenticateToken, (req, res) => {
     res.json({

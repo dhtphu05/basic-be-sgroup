@@ -87,6 +87,56 @@ class AuthController {
             });
         }
     }
+    async forgotPassword(req, res) {
+        try{
+            const {email} =req.body;
+            if(!email){
+                return res.status(400).json({
+                    success: false,
+                    message: 'Please provide email'
+                });
+            }
+            const result = await AuthService.forgotPassword(email);
+            console.log('Forgot password result:', result);
+            return res.status(200).json({
+                success: true,
+                message: 'Reset token generated',
+                data: result
+            });
+        }
+        catch(error){
+            console.error('Forgot password controller error:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+    async resetPassword(req, res) {
+        try{
+            const {token} = req.params;
+            const {password} = req.body;
+            if(!token || !password){
+                return res.status(400).json({
+                    success: false,
+                    message: 'Please provide token and new password'
+                });
+            }
+            const result = await AuthService.resetPassword(token, password);
+            return res.status(200).json({
+                success: true,
+                message: 'Password reset successfully',
+                data: result
+            });
+        }
+        catch(error){
+            console.error('Reset password controller error:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
 }
 
 export default new AuthController();

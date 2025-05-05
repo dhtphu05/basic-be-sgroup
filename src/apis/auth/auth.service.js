@@ -2,6 +2,7 @@ import { UserRepository } from '../../repositories/users.repository.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import UserModel from '../../models/users.model.js';
+import { sendResetPasswordEmail } from '../email/email.service.js'; 
 
 const userRepo = new UserRepository();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
@@ -108,6 +109,60 @@ class AuthService {
     async example(username, password) {
         console.log(`Example service called with username: ${username} and password: ${password}`);
         return { message: 'Example service' };
+    }
+    async forgotPassword(email){
+        try{
+            const user = await UserModel.findOne({email});
+
+            if(!user) {
+                throw new Error('User not found');
+            }
+            else{
+                const resetToken = this._generateToken(user);
+
+                user.resetToken = resetToken;
+                user.resetTokenExpires = Date.now() + 3600000;
+                console.log('Reset token in DB:', resetToken); 
+                await user.save();
+
+                const resetLink= `${process.env.FRONTEND_URL || 'http://localhost:3000/'}/apis/auth/reset-password/${resetToken}`;
+                console.log(`Reset link: ${resetLink}`);
+                
+                await sendResetPasswordEmail(user.email, resetLink);
+                console.log(`Reset password email sent to ${user.email}`);
+                return {
+                    message: 'Reset password email sent',
+                    resetLink
+                };
+            
+            }
+        }
+        catch(error){
+            console.error('Forgot password error:', error.message);
+            throw error;
+        }
+    }
+    async resetPassword(resetToken, newPassword){
+        try{
+            console.log('Reset token:', resetToken);
+            const user = await UserModel.findOne({ resetToken: resetToken});
+            if(!user){
+                throw new Error('Invalid or expired reset token');
+            }
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+            user.password = hashedPassword;
+            user.resetToken = undefined;
+            user.resetTokenExpires = undefined;
+            await user.save();
+            return {
+                message: 'Password reset successfully'
+            };
+        }
+        catch(error){
+            console.error('Reset password error:', error.message);
+            throw error;
+        }
     }
 }
 
